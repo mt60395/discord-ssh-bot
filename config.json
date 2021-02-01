@@ -1,5 +1,4 @@
 {
-	"channel": "ChannelID",
 	"owner": "UserID",
 	"token": "BotToken"
 }
