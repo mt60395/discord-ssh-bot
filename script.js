@@ -14,18 +14,33 @@ const fmt = {
 	reset: "\x1b[0m",
 };
 
+const cmds = ["clear", "upload"]; // custom commands
+
 async function exec(msg) {
 	let output = "";
 	let input = msg.content.substring(1);
 	let args = input.split(" ");
 	let command = args.shift();
-	if (command == "clear") {
-		const messages = await msg.channel.messages.fetch({limit: 100}).catch(()=>{console.log("ERROR fetching messages.")});
-		messages.forEach(message => {
-			if (message.author.bot) {
-				message.delete().catch(()=>{});
-			}
-		})
+	if (cmds.includes(command)) {
+		switch (command) {
+			case "clear":
+				const messages = await msg.channel.messages.fetch({limit: 100}).catch(()=>{console.log("ERROR fetching messages.")});
+				messages.forEach(message => {
+					if (message.author.bot) {
+						message.delete().catch(()=>{});
+					}
+				})
+				break;
+			case "upload":
+				args.forEach(fileName => {
+					msg.channel.send({
+						files: [{
+							attachment: fileName,
+							name: fileName.substring(fileName.lastIndexOf("/") + 1)
+						}]
+					});
+				});
+		}
 	}
 	else {
 		let cmd = spawn(command, args, {
@@ -33,11 +48,11 @@ async function exec(msg) {
 			env: { COLUMNS: 128 },
 		});
 		cmd.stdout.on("data", data => {
-			process.stdout.write(data);
+			// process.stdout.write(data);
 			output += data;
 		});
 		cmd.stderr.on("data", data => {
-			process.stderr.write(data);
+			// process.stderr.write(data);
 			output += data;
 		});
 		cmd.on("exit", () => {
@@ -48,7 +63,7 @@ async function exec(msg) {
 
 client.on("message", msg => {
 	if (msg.author === client.config.owner && msg.content.startsWith("!")) {
-		console.log(msg.content);
+		// console.log(msg.content);
 		exec(msg);
 	}
 });
